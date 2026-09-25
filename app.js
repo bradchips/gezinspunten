@@ -8,6 +8,7 @@ let children = [];
 let tasks = [];
 let rewards = [];
 let pointTransactions = [];
+let taskSubmissions = [];
 let activeChild = null;
 
 const $ = (selector) => document.querySelector(selector);
@@ -33,7 +34,8 @@ async function loadApp() {
   childrenResult,
   tasksResult,
   rewardsResult,
-  pointsResult
+  pointsResult,
+  submissionsResult
 ] = await Promise.all([
     db
       .from("children")
@@ -52,9 +54,14 @@ async function loadApp() {
       .eq("family_id", FAMILY_ID),
 
     db
-  .from("point_transactions")
-  .select("*")
-  .eq("family_id", FAMILY_ID)
+      .from("point_transactions")
+      .select("*")
+      .eq("family_id", FAMILY_ID),
+
+    db
+      .from("task_submissions")
+      .select("*")
+      .eq("family_id", FAMILY_ID) 
     
   ]);
 
@@ -90,10 +97,19 @@ async function loadApp() {
   return;
 }
 
+  if (submissionsResult.error) {
+  showError(
+    "Aanvragen laden mislukt: " +
+    submissionsResult.error.message
+  );
+  return;
+}
+  
   children = childrenResult.data || [];
   tasks = tasksResult.data || [];
   rewards = rewardsResult.data || [];
   pointTransactions = pointsResult.data || [];
+  taskSubmissions = submissionsResult.data || [];
 
   console.log("Kinderen:", children);
   console.log("Taken:", tasks);
@@ -198,7 +214,15 @@ function renderTasks() {
 
   if (!container) return;
 
-  container.innerHTML = tasks.map(task => `
+  container.innerHTML = tasks.map(task => {
+  const isPending = taskSubmissions.some(
+    submission =>
+      submission.task_id === task.id &&
+      submission.child_id === activeChild.id &&
+      submission.status === "pending"
+  );
+
+  return `
     <div class="card">
       <div class="meta">
         <b>
@@ -212,13 +236,15 @@ function renderTasks() {
       </div>
 
       <button
-        class="task-button"
-        data-task-id="${task.id}"
-      >
-        Klaar
-      </button>
-    </div>
-  `).join("");
+  class="task-button"
+  data-task-id="${task.id}"
+  ${isPending ? "disabled" : ""}
+>
+  ${isPending ? "Aangevraagd ✓" : "Klaar"}
+</button>
+        </div>
+  `;
+}).join("");
 
   container
   .querySelectorAll("[data-task-id]")
@@ -257,6 +283,8 @@ function renderTasks() {
 
       console.log("Aanvraag opgeslagen:", data);
 
+      taskSubmissions.push(data[0]);
+      
       button.textContent = "Aangevraagd ✓";
       alert(
         `${activeChild.name} heeft "${task.name}" ingediend voor goedkeuring.`
