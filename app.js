@@ -7,18 +7,30 @@ console.log("Supabase gekoppeld");
 const FAMILY_ID = "535e95f7-ef01-4cab-80e0-504aa298475e";
 
 async function testDatabase() {
-  const { data, error } = await db
+  const { data: children, error: childrenError } = await db
     .from("children")
     .select("*")
     .eq("family_id", FAMILY_ID);
 
-  if (error) {
-    console.error("Supabase fout:", error);
-    alert("Databaseverbinding mislukt: " + error.message);
+  if (childrenError) {
+    console.error("Kinderen fout:", childrenError);
     return;
   }
 
-  console.log("Kinderen uit Supabase:", data);
+  console.log("Kinderen uit Supabase:", children);
+
+  const { data: tasks, error: tasksError } = await db
+    .from("tasks")
+    .select("*")
+    .eq("family_id", FAMILY_ID);
+
+  if (tasksError) {
+    console.error("Taken fout:", tasksError);
+    return;
+  }
+
+  console.log("Taken uit Supabase:", tasks);
+}
 }
 
 testDatabase();
