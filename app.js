@@ -435,6 +435,8 @@ $("#backBtn").addEventListener("click", () => {
 });
 
 function renderParent() {
+  renderAdjustments();
+
   const pendingContainer = $("#pending");
 
   if (!pendingContainer) return;
@@ -543,6 +545,47 @@ function renderParent() {
       });
     });
   
+}
+
+function renderAdjustments() {
+  const container = $("#adjustments");
+
+  if (!container) return;
+
+  container.innerHTML = children.map(child => `
+    <div class="card">
+      <div class="meta">
+        <b>${child.emoji || "👦"} ${child.name}</b>
+        <small>Geef direct punten</small>
+      </div>
+
+      <div class="actions">
+        <button
+          class="quick-points"
+          data-child-id="${child.id}"
+          data-points="1"
+        >
+          +1 ⭐
+        </button>
+
+        <button
+          class="quick-points"
+          data-child-id="${child.id}"
+          data-points="2"
+        >
+          +2 ⭐
+        </button>
+
+        <button
+          class="quick-points"
+          data-child-id="${child.id}"
+          data-points="5"
+        >
+          +5 ⭐
+        </button>
+      </div>
+    </div>
+  `).join("");
 }
 
 loadApp();
