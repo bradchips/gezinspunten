@@ -426,6 +426,14 @@ $("#pinSubmit").addEventListener("click", (event) => {
   renderParent();
 });
 
+$("#backBtn").addEventListener("click", () => {
+  $("#parentView").hidden = true;
+  $("#childView").hidden = false;
+  $("#title").textContent = "Vandaag";
+
+  render();
+});
+
 function renderParent() {
   const pendingContainer = $("#pending");
 
