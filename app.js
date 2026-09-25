@@ -132,6 +132,7 @@ function render() {
   renderScore();
   renderTasks();
   renderRewards();
+  renderPending();
 }
 
 function renderChildren() {
@@ -291,6 +292,54 @@ function renderTasks() {
       );
     });
   });
+}
+
+function renderPending() {
+  const container = $("#pending");
+  if (!container) return;
+
+  const pending = taskSubmissions.filter(
+    submission => submission.status === "pending"
+  );
+
+  if (!pending.length) {
+    container.innerHTML = "<p>Geen openstaande aanvragen.</p>";
+    return;
+  }
+
+  container.innerHTML = pending.map(submission => {
+    const child = children.find(
+      item => item.id === submission.child_id
+    );
+
+    const task = tasks.find(
+      item => item.id === submission.task_id
+    );
+
+    return `
+      <div class="card">
+        <div class="meta">
+          <b>
+            ${child?.emoji || "👤"}
+            ${child?.name || "Onbekend"}
+          </b>
+
+          <span>
+            ${task?.emoji || "✅"}
+            ${task?.name || "Onbekende taak"}
+          </span>
+
+          <small>
+            +${task?.points || 0} ⭐
+          </small>
+        </div>
+
+        <button disabled>
+          Goedkeuren
+        </button>
+      </div>
+    `;
+  }).join("");
 }
 
 function renderRewards() {
