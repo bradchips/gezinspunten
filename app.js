@@ -497,13 +497,15 @@ function renderParent() {
         button.textContent = "Bezig...";
 
         const { error: pointsError } = await db
-          .from("point_transactions")
-          .insert({
-            family_id: FAMILY_ID,
-            child_id: submission.child_id,
-            amount: task.points,
-            reason: task.name
-          });
+  .from("point_transactions")
+  .insert({
+    family_id: FAMILY_ID,
+    child_id: submission.child_id,
+    amount: task.points,
+    transaction_type: "task",
+    description: task.name,
+    submission_id: submission.id
+  });
 
         if (pointsError) {
           console.error("Punten toevoegen mislukt:", pointsError);
