@@ -586,6 +586,49 @@ function renderAdjustments() {
       </div>
     </div>
   `).join("");
+
+    container
+    .querySelectorAll(".quick-points")
+    .forEach(button => {
+      button.addEventListener("click", async () => {
+        const childId = button.dataset.childId;
+        const points = Number(button.dataset.points);
+
+        const child = children.find(
+          item => item.id === childId
+        );
+
+        if (!child) return;
+
+        button.disabled = true;
+        button.textContent = "Bezig...";
+
+        const { error } = await db
+          .from("point_transactions")
+          .insert({
+            family_id: FAMILY_ID,
+            child_id: childId,
+            amount: points,
+            transaction_type: "manual",
+            description: "Snelle punten"
+          });
+
+        if (error) {
+          console.error("Snelle punten mislukt:", error);
+          alert("Punten toevoegen mislukt: " + error.message);
+
+          button.disabled = false;
+          button.textContent = `+${points} ⭐`;
+          return;
+        }
+
+        alert(`${child.name} krijgt +${points} ⭐`);
+
+        await loadApp();
+        renderParent();
+      });
+    });
+
 }
 
 loadApp();
