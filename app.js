@@ -30,6 +30,18 @@ async function testDatabase() {
   }
 
   console.log("Taken uit Supabase:", tasks);
+
+  const { data: rewards, error: rewardsError } = await db
+  .from("rewards")
+  .select("*")
+  .eq("family_id", FAMILY_ID);
+
+if (rewardsError) {
+  console.error("Beloningen fout:", rewardsError);
+  return;
+}
+
+console.log("Beloningen uit Supabase:", rewards);
 }
 
 testDatabase();
