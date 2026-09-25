@@ -31,6 +31,5 @@ async function testDatabase() {
 
   console.log("Taken uit Supabase:", tasks);
 }
-}
 
 testDatabase();
