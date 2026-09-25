@@ -661,6 +661,16 @@ function renderHistory() {
 
     const sign = transaction.amount >= 0 ? "+" : "";
 
+const date = new Date(transaction.created_at);
+
+const dateText = date.toLocaleString("nl-NL", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit"
+});
+    
     return `
       <div class="card">
         <div class="meta">
@@ -670,8 +680,9 @@ function renderHistory() {
           </b>
 
           <small>
-            ${transaction.description || "Punten aangepast"}
-          </small>
+  ${transaction.description || "Punten aangepast"}
+  · ${dateText}
+</small>
         </div>
       </div>
     `;
