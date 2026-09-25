@@ -334,12 +334,46 @@ function renderPending() {
           </small>
         </div>
 
-        <button disabled>
-          Goedkeuren
-        </button>
+        <button
+  class="approve-button"
+  data-submission-id="${submission.id}"
+>
+  Goedkeuren
+</button>
       </div>
     `;
   }).join("");
+
+container
+  .querySelectorAll(".approve-button")
+  .forEach(button => {
+    button.addEventListener("click", async () => {
+      const submissionId = button.dataset.submissionId;
+
+      button.disabled = true;
+      button.textContent = "Bezig...";
+
+      const { error } = await db
+        .from("task_submissions")
+        .update({
+          status: "approved",
+          reviewed_at: new Date().toISOString()
+        })
+        .eq("id", submissionId);
+
+      if (error) {
+        console.error("Goedkeuren mislukt:", error);
+        alert("Goedkeuren mislukt: " + error.message);
+
+        button.disabled = false;
+        button.textContent = "Goedkeuren";
+        return;
+      }
+
+      alert("Aanvraag goedgekeurd ✓");
+    });
+  });
+  
 }
 
 function renderRewards() {
@@ -388,6 +422,30 @@ $("#pinSubmit").addEventListener("click", (event) => {
   $("#childView").hidden = true;
   $("#parentView").hidden = false;
   $("#title").textContent = "Oudermodus";
+
+  renderParent();
 });
+
+function renderParent() {
+  const pendingContainer = $("#pending");
+
+  if (!pendingContainer) return;
+
+  const pendingSubmissions = taskSubmissions.filter(
+    submission => submission.status === "pending"
+  );
+
+  if (pendingSubmissions.length === 0) {
+    pendingContainer.innerHTML = `
+      <div class="card">
+        <div class="meta">
+          <b>Geen aanvragen</b>
+          <small>Er wacht niets op goedkeuring.</small>
+        </div>
+      </div>
+    `;
+    return;
+  }
+}
 
 loadApp();
