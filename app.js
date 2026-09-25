@@ -49,7 +49,7 @@ async function loadApp() {
     db
       .from("rewards")
       .select("*")
-      .eq("family_id", FAMILY_ID)
+      .eq("family_id", FAMILY_ID),
 
     db
   .from("point_transactions")
