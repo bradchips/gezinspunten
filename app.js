@@ -221,21 +221,48 @@ function renderTasks() {
   `).join("");
 
   container
-    .querySelectorAll("[data-task-id]")
-    .forEach(button => {
-      button.addEventListener("click", () => {
-        const task = tasks.find(
-          item => item.id === button.dataset.taskId
-        );
+  .querySelectorAll("[data-task-id]")
+  .forEach(button => {
+    button.addEventListener("click", async () => {
+      const task = tasks.find(
+        item => item.id === button.dataset.taskId
+      );
 
-        alert(
-          `${activeChild.name} heeft ` +
-          `"${task.name}" gedaan.\n\n` +
-          `In de volgende stap slaan we deze ` +
-          `goedkeuring op in Supabase.`
-        );
-      });
+      if (!task || !activeChild) {
+        alert("Taak of kind niet gevonden.");
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Bezig...";
+
+      const { data, error } = await db
+        .from("task_submissions")
+        .insert({
+          family_id: FAMILY_ID,
+          child_id: activeChild.id,
+          task_id: task.id,
+          status: "pending"
+        })
+        .select();
+
+      if (error) {
+        console.error("Aanvraag opslaan mislukt:", error);
+        alert("Aanvraag opslaan mislukt: " + error.message);
+
+        button.disabled = false;
+        button.textContent = "Klaar";
+        return;
+      }
+
+      console.log("Aanvraag opgeslagen:", data);
+
+      button.textContent = "Aangevraagd ✓";
+      alert(
+        `${activeChild.name} heeft "${task.name}" ingediend voor goedkeuring.`
+      );
     });
+  });
 }
 
 function renderRewards() {
