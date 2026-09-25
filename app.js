@@ -327,4 +327,18 @@ $("#modeBtn").addEventListener("click", () => {
   $("#pinDialog").showModal();
 });
 
+$("#pinSubmit").addEventListener("click", (event) => {
+  event.preventDefault();
+
+  if ($("#pinInput").value !== "1234") {
+    $("#pinError").textContent = "PIN klopt niet.";
+    return;
+  }
+
+  $("#pinDialog").close();
+  $("#childView").hidden = true;
+  $("#parentView").hidden = false;
+  $("#title").textContent = "Oudermodus";
+});
+
 loadApp();
