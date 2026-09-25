@@ -7,6 +7,7 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let children = [];
 let tasks = [];
 let rewards = [];
+let pointTransactions = [];
 let activeChild = null;
 
 const $ = (selector) => document.querySelector(selector);
@@ -29,10 +30,11 @@ async function loadApp() {
   console.log("Supabase laden...");
 
   const [
-    childrenResult,
-    tasksResult,
-    rewardsResult
-  ] = await Promise.all([
+  childrenResult,
+  tasksResult,
+  rewardsResult,
+  pointsResult
+] = await Promise.all([
     db
       .from("children")
       .select("*")
@@ -48,6 +50,12 @@ async function loadApp() {
       .from("rewards")
       .select("*")
       .eq("family_id", FAMILY_ID)
+
+    db
+  .from("point_transactions")
+  .select("*")
+  .eq("family_id", FAMILY_ID)
+    
   ]);
 
   if (childrenResult.error) {
@@ -74,9 +82,18 @@ async function loadApp() {
     return;
   }
 
+  if (pointsResult.error) {
+  showError(
+    "Punten laden mislukt: " +
+    pointsResult.error.message
+  );
+  return;
+}
+
   children = childrenResult.data || [];
   tasks = tasksResult.data || [];
   rewards = rewardsResult.data || [];
+  pointTransactions = pointsResult.data || [];
 
   console.log("Kinderen:", children);
   console.log("Taken:", tasks);
@@ -131,14 +148,23 @@ function renderChildren() {
     });
 }
 
+function getScore(childId) {
+  return pointTransactions
+    .filter(transaction => transaction.child_id === childId)
+    .reduce(
+      (total, transaction) =>
+        total + Number(transaction.amount || 0),
+      0
+    );
+}
+
 function renderScore() {
   if (!activeChild) return;
 
   $("#childName").textContent = activeChild.name;
 
-  // Puntensaldo koppelen we in de volgende stap
-  const score = 0;
-
+  const score = getScore(activeChild.id);
+  
   $("#score").textContent = score;
 
   const sortedRewards = [...rewards]
