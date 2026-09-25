@@ -321,4 +321,10 @@ function renderRewards() {
   `).join("");
 }
 
+$("#modeBtn").addEventListener("click", () => {
+  $("#pinInput").value = "";
+  $("#pinError").textContent = "";
+  $("#pinDialog").showModal();
+});
+
 loadApp();
