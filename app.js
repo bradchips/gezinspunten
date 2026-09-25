@@ -446,6 +446,93 @@ function renderParent() {
     `;
     return;
   }
+    pendingContainer.innerHTML = pendingSubmissions.map(submission => {
+    const child = children.find(
+      child => child.id === submission.child_id
+    );
+
+    const task = tasks.find(
+      task => task.id === submission.task_id
+    );
+
+    if (!child || !task) return "";
+
+    return `
+      <div class="card">
+        <div class="meta">
+          <b>${child.emoji || "👦"} ${child.name}</b>
+          <span>${task.emoji || "✅"} ${task.name}</span>
+          <small>+${task.points} ⭐</small>
+        </div>
+
+        <button
+          class="approve-button"
+          data-submission-id="${submission.id}"
+        >
+          Goedkeuren
+        </button>
+      </div>
+    `;
+  }).join("");
+
+  pendingContainer
+    .querySelectorAll(".approve-button")
+    .forEach(button => {
+      button.addEventListener("click", async () => {
+        const submissionId = button.dataset.submissionId;
+
+        const submission = taskSubmissions.find(
+          item => item.id === submissionId
+        );
+
+        if (!submission) return;
+
+        const task = tasks.find(
+          item => item.id === submission.task_id
+        );
+
+        if (!task) return;
+
+        button.disabled = true;
+        button.textContent = "Bezig...";
+
+        const { error: pointsError } = await db
+          .from("point_transactions")
+          .insert({
+            family_id: FAMILY_ID,
+            child_id: submission.child_id,
+            amount: task.points,
+            reason: task.name
+          });
+
+        if (pointsError) {
+          console.error("Punten toevoegen mislukt:", pointsError);
+          alert("Punten toevoegen mislukt: " + pointsError.message);
+          button.disabled = false;
+          button.textContent = "Goedkeuren";
+          return;
+        }
+
+        const { error: updateError } = await db
+          .from("task_submissions")
+          .update({
+            status: "approved"
+          })
+          .eq("id", submission.id);
+
+        if (updateError) {
+          console.error("Goedkeuren mislukt:", updateError);
+          alert("Goedkeuren mislukt: " + updateError.message);
+          return;
+        }
+
+        alert(`Goedgekeurd! +${task.points} ⭐`);
+
+        await loadApp();
+        renderParent();
+      });
+    });
+  
 }
 
 loadApp();
