@@ -436,6 +436,7 @@ $("#backBtn").addEventListener("click", () => {
 
 function renderParent() {
   renderAdjustments();
+  renderHistory();
 
   const pendingContainer = $("#pending");
 
@@ -629,6 +630,52 @@ function renderAdjustments() {
       });
     });
 
+}
+
+function renderHistory() {
+  const container = $("#history");
+
+  if (!container) return;
+
+  if (pointTransactions.length === 0) {
+    container.innerHTML = `
+      <div class="card">
+        <div class="meta">
+          <b>Nog geen historie</b>
+          <small>Er zijn nog geen punten toegekend.</small>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const transactions = [...pointTransactions].reverse();
+
+  container.innerHTML = transactions.map(transaction => {
+    const child = children.find(
+      item => item.id === transaction.child_id
+    );
+
+    const childName = child ? child.name : "Onbekend";
+    const childEmoji = child ? (child.emoji || "👦") : "👦";
+
+    const sign = transaction.amount >= 0 ? "+" : "";
+
+    return `
+      <div class="card">
+        <div class="meta">
+          <b>
+            ${childEmoji} ${childName}
+            ${sign}${transaction.amount} ⭐
+          </b>
+
+          <small>
+            ${transaction.description || "Punten aangepast"}
+          </small>
+        </div>
+      </div>
+    `;
+  }).join("");
 }
 
 loadApp();
