@@ -609,7 +609,7 @@ function renderAdjustments() {
             family_id: FAMILY_ID,
             child_id: childId,
             amount: points,
-            transaction_type: "manual",
+            transaction_type: "bonus",
             description: "Snelle punten"
           });
 
